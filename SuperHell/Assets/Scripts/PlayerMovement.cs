@@ -39,7 +39,7 @@ public class PlayerMovement : MonoBehaviour
             animator.Play("Jump");
             Jump();
         }
-        else if (!isGrounded && !isJumping && !isFalling)
+        else if (!isGrounded && !isJumping)
         {
             // Iniciar el retraso de la caída si acaba de dejar el suelo
             StartCoroutine(FallDelay(0.3f)); // Espera 1 segundo antes de activar la caída
