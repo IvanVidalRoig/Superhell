@@ -8,12 +8,14 @@ public class PlayerMovement : MonoBehaviour
     public float rotationSpeed = 250;
     public Animator animator;
     public Rigidbody rb;
-    public float jumpHeight = 3;
+    public float jumpHeight = 3f;
+    public float climbHeight= 1f;
     public Transform groundCheck;
     public float groundDistance = 0.1f;
     public LayerMask groundMask;
 
     private bool isGrounded;
+    private bool isClimbing;
     private bool isJumping = false;
     private bool isFalling = false;
     private float x, y;
@@ -39,10 +41,14 @@ public class PlayerMovement : MonoBehaviour
             animator.Play("Jump");
             Jump();
         }
-        else if (!isGrounded && !isJumping)
+        else if (!isGrounded && !isJumping && !isClimbing)
         {
-            // Iniciar el retraso de la caída si acaba de dejar el suelo
-            StartCoroutine(FallDelay(0.3f)); // Espera 1 segundo antes de activar la caída
+            animator.Play("Falling");
+        }
+        else if (Input.GetKey("1")){
+            isClimbing = true;
+            animator.Play("Climbing");
+            Climb();
         }
 
         // Si el personaje aterriza, detener la animación de caída
@@ -59,24 +65,28 @@ public class PlayerMovement : MonoBehaviour
         rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
         
         // Iniciar corrutina para desactivar el salto después de 3 segundos
-        StartCoroutine(JumpCooldown(1f));
+        StartCoroutine(JumpCooldown(0.5f));
     }
+    private void Climb()
+    {
+        // Añadir fuerza para el salto
+        rb.AddForce(Vector3.up * climbHeight, ForceMode.Impulse);
+        
+        // Iniciar corrutina para desactivar el salto después de 3 segundos
+        StartCoroutine(ClimbCooldown(1.5f));
+    }
+
 
     private IEnumerator JumpCooldown(float duration)
     {
         yield return new WaitForSeconds(duration);
         isJumping = false;
     }
-
-    private IEnumerator FallDelay(float delay)
+        private IEnumerator ClimbCooldown(float duration)
     {
-        yield return new WaitForSeconds(delay);
-
-        // Activar la animación de caída solo si sigue en el aire después del retraso
-        if (!isGrounded)
-        {
-            isFalling = true;
-            animator.Play("Falling");
-        }
+        yield return new WaitForSeconds(duration);
+        isClimbing = false;
     }
+
+    
 }

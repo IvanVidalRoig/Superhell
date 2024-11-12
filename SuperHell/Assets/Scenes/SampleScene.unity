@@ -657,6 +657,7 @@ MonoBehaviour:
   animator: {fileID: 1868840939}
   rb: {fileID: 1868840937}
   jumpHeight: 4.3
+  climbHeight: 1
   groundCheck: {fileID: 895712223}
   groundDistance: 0.1
   groundMask:
