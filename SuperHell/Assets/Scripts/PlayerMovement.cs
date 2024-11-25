@@ -73,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
     private void Climb()
     {
         // Calcular la fuerza hacia arriba
-        float upwardForce = Mathf.Sqrt(climbHeight * -2f * Physics.gravity.y);
+        float upwardForce = Mathf.Sqrt(climbHeight * -3f * Physics.gravity.y);
 
         // Aplicar la fuerza hacia arriba
         rb.velocity = new Vector3(rb.velocity.x, upwardForce, rb.velocity.z);
