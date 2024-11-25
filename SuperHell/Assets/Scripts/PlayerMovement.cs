@@ -10,14 +10,17 @@ public class PlayerMovement : MonoBehaviour
     public Rigidbody rb;
     public float jumpHeight = 3f;
     public float climbHeight= 1f;
+    public float climbForwardForce = 1000f; 
+
     public Transform groundCheck;
     public float groundDistance = 0.1f;
     public LayerMask groundMask;
-
+    public LayerMask resetMask; 
+    public LayerMask climbMask;
+    private bool isInClimbZone = false;
     private bool isGrounded;
     private bool isClimbing;
     private bool isJumping = false;
-    private bool isFalling = false;
     private float x, y;
 
     void Update()
@@ -33,11 +36,15 @@ public class PlayerMovement : MonoBehaviour
         bool wasGrounded = isGrounded;
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
+        if (Input.GetKey("q")) 
+        {
+            TeleportToOrigin();
+        }
+
         if (isGrounded && !isJumping && Input.GetKey("space"))
         {
             // Iniciar el salto y activar la animación
             isJumping = true;
-            isFalling = false;
             animator.Play("Jump");
             Jump();
         }
@@ -45,18 +52,14 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.Play("Falling");
         }
-        else if (Input.GetKey("1")){
+        
+        if (Input.GetKey("f") && isInClimbZone) 
+        {
             isClimbing = true;
             animator.Play("Climbing");
             Climb();
         }
-
-        // Si el personaje aterriza, detener la animación de caída
-        if (isGrounded && isFalling)
-        {
-            isFalling = false;
-            animator.Play("Landing"); // Puedes cambiar "Landing" por una animación de aterrizaje, o "Idle" si prefieres
-        }
+        
     }
 
     private void Jump()
@@ -65,14 +68,18 @@ public class PlayerMovement : MonoBehaviour
         rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
         
         // Iniciar corrutina para desactivar el salto después de 3 segundos
-        StartCoroutine(JumpCooldown(0.5f));
+        StartCoroutine(JumpCooldown(0.9f));
     }
     private void Climb()
     {
-        // Añadir fuerza para el salto
-        rb.AddForce(Vector3.up * climbHeight, ForceMode.Impulse);
-        
-        // Iniciar corrutina para desactivar el salto después de 3 segundos
+        // Calcular la fuerza hacia arriba
+        float upwardForce = Mathf.Sqrt(climbHeight * -2f * Physics.gravity.y);
+
+        // Aplicar la fuerza hacia arriba
+        rb.velocity = new Vector3(rb.velocity.x, upwardForce, rb.velocity.z);
+
+
+        // Iniciar corrutina para desactivar la escalada después de 1.5 segundos
         StartCoroutine(ClimbCooldown(1.5f));
     }
 
@@ -88,5 +95,46 @@ public class PlayerMovement : MonoBehaviour
         isClimbing = false;
     }
 
-    
+    private IEnumerator ApplyForwardForceWithDelay(float delay)
+    {
+        // Esperar el tiempo especificado
+        yield return new WaitForSeconds(delay);
+
+        // Aplicar la fuerza hacia adelante
+        ApplyForwardForce(climbForwardForce);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Verificar si la layer del objeto es "Reset"
+        if (((1 << collision.gameObject.layer) & resetMask) != 0)
+        {
+            TeleportToOrigin();
+        }
+            // Verificar si la layer del objeto es "borde" para escalada
+        if (((1 << collision.gameObject.layer) & climbMask) != 0)
+        {
+            isInClimbZone = true;
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        // Verificar si la layer del objeto es "borde"
+        if (((1 << collision.gameObject.layer) & climbMask) != 0)
+        {
+            isInClimbZone = false;
+        }
+    }
+    private void TeleportToOrigin()
+    {
+        // Teletransportar al jugador a la posición (0, 0, 0)
+        rb.position = Vector3.zero;
+        rb.velocity = Vector3.zero; // Resetear la velocidad para evitar que el jugador siga moviéndose
+    }
+    private void ApplyForwardForce(float force)
+    {
+        // Aplica una fuerza hacia adelante basada en la dirección actual del personaje
+        rb.AddForce(transform.forward * force, ForceMode.Impulse);
+    }
 }
