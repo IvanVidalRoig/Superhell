@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - ClimbTrigger
+  - Feet
+  - Reset
+  - Climbable
   layers:
   - Default
   - TransparentFX
