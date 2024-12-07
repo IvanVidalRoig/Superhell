@@ -8,6 +8,7 @@ TagManager:
   - Feet
   - Reset
   - Climbable
+  - Enemy
   layers:
   - Default
   - TransparentFX
