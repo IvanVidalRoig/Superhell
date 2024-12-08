@@ -24,12 +24,28 @@ public class EnemyAI : MonoBehaviour
     [Header("Player Reference")]
     public Transform player;
     public EnemyState currentState = EnemyState.Patrol;
+    private Animator anim;
+    public int attackRange;
 
     void Start()
     {
+        anim = GetComponentInChildren<Animator>();
+        Debug.Log("Animator encontrado: " + anim.gameObject.name);
+
         if (platformObject != null)
         {
             GenerateWaypoints();
+
+            // Aquí registramos el enemigo en su plataforma
+            PlatformDetector pd = platformObject.GetComponentInChildren<PlatformDetector>();
+            if (pd != null)
+            {
+                pd.RegisterEnemy(this);
+            }
+            else
+            {
+                Debug.LogWarning("La plataforma no tiene PlatformDetector asignado");
+            }
         }
         else
         {
@@ -51,9 +67,16 @@ public class EnemyAI : MonoBehaviour
                 Patrol();
                 break;
             case EnemyState.Chase:
+                if (Vector3.Distance(transform.position, player.position) < attackRange)
+                    AttackPlayer();
                 Chase();
                 break;
         }
+    }
+
+    void AttackPlayer()
+    {
+        anim.SetTrigger("Hit");
     }
 
     void Patrol()
@@ -61,10 +84,24 @@ public class EnemyAI : MonoBehaviour
         if (waypoints.Count == 0) return;
 
         Transform target = waypoints[currentWaypointIndex];
-        transform.position = Vector3.MoveTowards(transform.position, target.position, patrolSpeed * Time.deltaTime);
 
+        // Dirección hacia el waypoint
+        Vector3 direction = (target.position - transform.position).normalized;
+        direction.y = 0; // Asegurarse de que no cambie la inclinación
+
+        // Rotación suave hacia el objetivo
+        float rotationSpeed = 5f; // Ajusta según la rapidez de giro que desees
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+
+        // Movimiento hacia el waypoint
+        transform.position = Vector3.MoveTowards(transform.position, target.position, patrolSpeed * Time.deltaTime);
+        anim.SetFloat("Walk", 1f);
+        var aux = anim.GetFloat("Walk");
+
+        // Cambio de waypoint cuando llega
         float dist = Vector3.Distance(transform.position, target.position);
-        if (dist < 0.1f)
+        if (dist < 0.2f)
         {
             currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Count;
         }
@@ -73,9 +110,18 @@ public class EnemyAI : MonoBehaviour
     void Chase()
     {
         if (player == null) return;
+
         Vector3 direction = (player.position - transform.position).normalized;
+        direction.y = 0; // Mantener el enemigo erguido sin inclinarlo
+        anim.SetFloat("Walk", 1f);
+
+        float rotationSpeed = 5f;
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+
         transform.position += direction * chaseSpeed * Time.deltaTime;
     }
+
 
     public void SetState(EnemyState newState)
     {
@@ -86,27 +132,37 @@ public class EnemyAI : MonoBehaviour
     {
         waypoints.Clear();
 
-        Renderer rend = platformObject.GetComponent<Renderer>();
-        if (rend == null)
+        Transform planeTransform = platformObject.transform.Find("Plane");
+        if (planeTransform != null)
         {
-            Debug.LogError("La plataforma no tiene Renderer, no se pueden obtener Bounds.");
-            return;
+            Renderer rend = planeTransform.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                // Ahora tienes el Renderer específico del objeto "plane"
+                Bounds platformBounds = rend.bounds;
+                Vector3 center = platformBounds.center;
+                Vector3 extents = platformBounds.extents;
+
+                // Añadimos el margen para que no estén en el borde exacto
+                Vector3 corner1 = new Vector3(center.x + extents.x - margin, center.y, center.z + extents.z - margin);
+                Vector3 corner2 = new Vector3(center.x - extents.x + margin, center.y, center.z + extents.z - margin);
+                Vector3 corner3 = new Vector3(center.x - extents.x + margin, center.y, center.z - extents.z + margin);
+                Vector3 corner4 = new Vector3(center.x + extents.x - margin, center.y, center.z - extents.z + margin);
+
+                waypoints.Add(CreateWaypointAt(corner1, "Waypoint1"));
+                waypoints.Add(CreateWaypointAt(corner2, "Waypoint2"));
+                waypoints.Add(CreateWaypointAt(corner3, "Waypoint3"));
+                waypoints.Add(CreateWaypointAt(corner4, "Waypoint4"));
+            }
+            else
+            {
+                Debug.LogError("El objeto 'plane' no tiene un Renderer.");
+            }
         }
-
-        Bounds platformBounds = rend.bounds;
-        Vector3 center = platformBounds.center;
-        Vector3 extents = platformBounds.extents;
-
-        // Añadimos el margen para que no estén en el borde exacto
-        Vector3 corner1 = new Vector3(center.x + extents.x - margin, center.y + 1, center.z + extents.z - margin);
-        Vector3 corner2 = new Vector3(center.x - extents.x + margin, center.y + 1, center.z + extents.z - margin);
-        Vector3 corner3 = new Vector3(center.x - extents.x + margin, center.y + 1, center.z - extents.z + margin);
-        Vector3 corner4 = new Vector3(center.x + extents.x - margin, center.y + 1, center.z - extents.z + margin);
-
-        waypoints.Add(CreateWaypointAt(corner1, "Waypoint1"));
-        waypoints.Add(CreateWaypointAt(corner2, "Waypoint2"));
-        waypoints.Add(CreateWaypointAt(corner3, "Waypoint3"));
-        waypoints.Add(CreateWaypointAt(corner4, "Waypoint4"));
+        else
+        {
+            Debug.LogError("No se encontró un objeto hijo llamado 'plane' en la plataforma.");
+        }
     }
 
     Transform CreateWaypointAt(Vector3 position, string name)

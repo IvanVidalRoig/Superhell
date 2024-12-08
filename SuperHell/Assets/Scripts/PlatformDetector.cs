@@ -1,14 +1,19 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class PlatformDetector : MonoBehaviour
 {
-    public EnemyAI enemyAI; // Asigna aquí el enemigo al que vas a notificar
+    private List<EnemyAI> enemiesOnPlatform = new List<EnemyAI>();
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            enemyAI.SetState(EnemyState.Chase);
+            // Cambiar el estado de todos los enemigos en esta plataforma a Chase
+            foreach (var enemy in enemiesOnPlatform)
+            {
+                enemy.SetState(EnemyState.Chase);
+            }
         }
     }
 
@@ -16,7 +21,19 @@ public class PlatformDetector : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            enemyAI.SetState(EnemyState.Patrol);
+            // Cambiar el estado de todos los enemigos en esta plataforma a Patrol
+            foreach (var enemy in enemiesOnPlatform)
+            {
+                enemy.SetState(EnemyState.Patrol);
+            }
+        }
+    }
+
+    public void RegisterEnemy(EnemyAI enemy)
+    {
+        if (!enemiesOnPlatform.Contains(enemy))
+        {
+            enemiesOnPlatform.Add(enemy);
         }
     }
 }
