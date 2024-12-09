@@ -126,7 +126,7 @@ public class PlayerMovement : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // Verificar si el objeto es escalable (capa "Borde" y etiqueta "Climbable")
-        if (((1 << other.gameObject.layer) & climbMask) != 0 &&  this.CompareTag("Feet"))
+        if (((1 << other.gameObject.layer) & climbMask) != 0 )
         {
             isInClimbZone = true;
             Debug.Log("Entró en zona de escalada.");
@@ -191,7 +191,7 @@ public class PlayerMovement : MonoBehaviour
     {
         // Define una posición segura fuera de la capa Reset
         Vector3 safeOrigin = new Vector3(0, 1, 0); // Ajusta según tu escena
-        rb.position = safeOrigin;
+        transform.position = safeOrigin;
         rb.velocity = Vector3.zero; // Resetear la velocidad para evitar que el jugador siga moviéndose
         Debug.Log("Jugador teletransportado a la posición segura: " + safeOrigin);
     }

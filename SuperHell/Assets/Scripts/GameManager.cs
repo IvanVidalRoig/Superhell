@@ -6,13 +6,13 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    public int vidas = 3; // NÃºmero inicial de vidas
-    public Text vidasTexto; // Referencia al elemento de UI que mostrarÃ¡ las vidas
+    public int vidas = 3; // Número inicial de vidas
+    public Text vidasTexto; // Referencia al elemento de UI que mostrará las vidas
     public GameObject gameOverPanel; // Referencia al panel de Game Over
 
     void Awake()
     {
-        // Implementar el patrÃ³n Singleton
+        // Implementar el patrón Singleton
         if (instance == null)
         {
             instance = this;
@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // MÃ©todo para restar una vida
+    // Método para restar una vida
     public void PerderVida()
     {
         vidas--;
@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
         {
             MostrarGameOver();
         }
-        
+
     }
 
     // Actualizar el texto de vidas en la UI
@@ -66,16 +66,16 @@ public class GameManager : MonoBehaviour
         // Opcional: Pausar el juego
         Time.timeScale = 0f;
 
-        // Reiniciar el juego despuÃ©s de unos segundos
+        // Reiniciar el juego después de unos segundos
         Invoke("ReiniciarJuego", 3f); // Espera 3 segundos antes de reiniciar
     }
 
     // Reiniciar el juego
     void ReiniciarJuego()
     {
-        Time.timeScale = 1f; // Asegurarse de que el tiempo estÃ© activo
+        Time.timeScale = 1f; // Asegurarse de que el tiempo esté activo
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        vidas = 3; // Reiniciar el nÃºmero de vidas
+        vidas = 3; // Reiniciar el número de vidas
         ActualizarVidasUI();
         if (gameOverPanel != null)
         {
