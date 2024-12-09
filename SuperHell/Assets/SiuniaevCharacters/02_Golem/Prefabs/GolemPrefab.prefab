@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8753619234690991415}
   m_Layer: 0
   m_Name: GolemPrefab
-  m_TagString: Enemy
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -128,6 +128,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 46b863770b0b07a41b0bd29637994634, type: 2}
+    - target: {fileID: 13700000, guid: d19f0e375a0203a4ca72964404dbd39e, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: d19f0e375a0203a4ca72964404dbd39e, type: 3}
     - target: {fileID: 13700000, guid: d19f0e375a0203a4ca72964404dbd39e, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 

@@ -126,7 +126,7 @@ public class PlayerMovement : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // Verificar si el objeto es escalable (capa "Borde" y etiqueta "Climbable")
-        if (((1 << other.gameObject.layer) & climbMask) != 0 &&  this.CompareTag("Feet"))
+        if (((1 << other.gameObject.layer) & climbMask) != 0 )
         {
             isInClimbZone = true;
             Debug.Log("Entró en zona de escalada.");
