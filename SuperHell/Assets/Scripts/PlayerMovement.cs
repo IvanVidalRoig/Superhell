@@ -9,129 +9,84 @@ public class PlayerMovement : MonoBehaviour
     public Animator animator;
     public Rigidbody rb;
     public float jumpHeight = 3f;
-    public float climbHeight = 1f;
-    public float climbForwardForce = 1000f; 
 
     public Transform groundCheck;
     public float groundDistance = 0.1f;
     public LayerMask groundMask;
     public LayerMask resetMask; 
-    public LayerMask climbMask;
 
-    private bool isInClimbZone = false;
     private bool isInResetZone = false; // Variable para la zona Reset
     private bool isGrounded;
-    private bool isClimbing;
-    private bool isJumping = false;
     private float x, y;
 
     // Variables para el cooldown de pérdida de vida
     private bool canLoseLife = true;
     public float lifeCooldown = 1f; // 1 segundo de cooldown
 
+    // Variable para controlar los saltos
+    private int jumpCount = 0;
+    private const int maxJumpCount = 2; // Salto inicial + doble salto
+
     void Update()
     {
-        // Procesar entradas de movimiento solo si NO está escalando
-        if (!isClimbing)
-        {
-            x = Input.GetAxis("Horizontal");
-            y = Input.GetAxis("Vertical");
-            transform.Rotate(0, x * Time.deltaTime * rotationSpeed, 0);
-            transform.Translate(0, 0, y * Time.deltaTime * runSpeed);
-            animator.SetFloat("VelX", x);
-            animator.SetFloat("VelY", y);
-        }
-        else
-        {
-            // Opcional: Resetear los parámetros de animación de movimiento
-            animator.SetFloat("VelX", 0);
-            animator.SetFloat("VelY", 0);
-        }
+        // Procesar entradas de movimiento
+        x = Input.GetAxis("Horizontal");
+        y = Input.GetAxis("Vertical");
+        transform.Rotate(0, x * Time.deltaTime * rotationSpeed, 0);
+        transform.Translate(0, 0, y * Time.deltaTime * runSpeed);
+        animator.SetFloat("VelX", x);
+        animator.SetFloat("VelY", y);
 
         // Verificar si el personaje está en el suelo
         bool wasGrounded = isGrounded;
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
+        // Si acaba de aterrizar, resetear jumpCount
+        if (isGrounded && !wasGrounded)
+        {
+            jumpCount = 0;
+        }
+
+        // Manejar la teletransportación
         if (Input.GetKey("q")) 
         {
             TeleportToOrigin();
         }
 
-        if (isGrounded && !isJumping && Input.GetKey("space"))
+        // Manejar el salto y el doble salto
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            // Iniciar el salto y activar la animación
-            isJumping = true;
-            animator.Play("Jump");
-            Jump();
+            if (isGrounded && jumpCount < 1)
+            {
+                // Salto inicial
+                animator.Play("Jump");
+                Jump();
+                jumpCount++;
+            }
+            else if (!isGrounded && jumpCount < maxJumpCount)
+            {
+                // Doble salto
+                animator.Play("Jump");
+                Jump();
+                jumpCount++;
+            }
         }
-        else if (!isGrounded && !isJumping && !isClimbing )
+        else if (!isGrounded && jumpCount == 0)
         {
             animator.Play("Falling");
-        }
-        
-        if (Input.GetKey("f") && isInClimbZone) 
-        {
-            isClimbing = true;
-            animator.Play("Climbing");
-            Climb();
         }
     }
 
     private void Jump()
     {
         // Añadir fuerza para el salto
+        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Resetear la velocidad vertical antes de saltar
         rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
-        
-        // Iniciar corrutina para desactivar el salto después de 0.9 segundos
-        StartCoroutine(JumpCooldown(0.9f));
     }
 
-    private void Climb()
-    {
-        // Calcular la fuerza hacia arriba
-        float upwardForce = Mathf.Sqrt(climbHeight * -3f * Physics.gravity.y);
-
-        // Aplicar la fuerza hacia arriba
-        rb.velocity = new Vector3(rb.velocity.x, upwardForce, rb.velocity.z);
-
-        // Aplicar fuerza hacia adelante si es necesario
-        rb.AddForce(transform.forward * climbForwardForce * Time.deltaTime);
-
-        // Iniciar corrutina para desactivar la escalada después de 1.5 segundos
-        StartCoroutine(ClimbCooldown(1.5f));
-    }
-
-    private IEnumerator JumpCooldown(float duration)
-    {
-        yield return new WaitForSeconds(duration);
-        isJumping = false;
-    }
-
-    private IEnumerator ClimbCooldown(float duration)
-    {
-        yield return new WaitForSeconds(duration);
-        isClimbing = false;
-    }
-
-    private IEnumerator ApplyForwardForceWithDelay(float delay)
-    {
-        // Esperar el tiempo especificado
-        yield return new WaitForSeconds(delay);
-
-        // Aplicar la fuerza hacia adelante
-        ApplyForwardForce(climbForwardForce);
-    }
-
-    // Añadimos OnTriggerEnter y OnTriggerExit para la escalada y reset
+    // Añadimos OnTriggerEnter y OnTriggerExit para la zona Reset
     private void OnTriggerEnter(Collider other)
     {
-        // Verificar si el objeto es escalable (capa "Borde" y etiqueta "Climbable")
-        if (((1 << other.gameObject.layer) & climbMask) != 0 )
-        {
-            isInClimbZone = true;
-            Debug.Log("Entró en zona de escalada.");
-        }
-
         // Manejar colisión con objetos de la capa "Reset" solo si es el collider de los pies
         if (((1 << other.gameObject.layer) & resetMask) != 0 && other.CompareTag("Reset"))
         {
@@ -165,13 +120,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        // Verificar si el objeto era escalable (capa "Borde" y etiqueta "Climbable")
-        if (((1 << other.gameObject.layer) & climbMask) != 0 && other.CompareTag("Climbable"))
-        {
-            isInClimbZone = false;
-            Debug.Log("Salió de la zona de escalada.");
-        }
-
         // Manejar la salida de la zona Reset solo si es el collider de los pies
         if (((1 << other.gameObject.layer) & resetMask) != 0 && other.CompareTag("Reset"))
         {
@@ -194,11 +142,5 @@ public class PlayerMovement : MonoBehaviour
         transform.position = safeOrigin;
         rb.velocity = Vector3.zero; // Resetear la velocidad para evitar que el jugador siga moviéndose
         Debug.Log("Jugador teletransportado a la posición segura: " + safeOrigin);
-    }
-
-    private void ApplyForwardForce(float force)
-    {
-        // Aplica una fuerza hacia adelante basada en la dirección actual del personaje
-        rb.AddForce(transform.forward * force, ForceMode.Impulse);
     }
 }
