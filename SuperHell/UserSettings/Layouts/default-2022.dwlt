@@ -119,7 +119,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 145
+  controlID: 69
   draggingID: 0
 --- !u!114 &6
 MonoBehaviour:
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 146
+  controlID: 70
   draggingID: 0
 --- !u!114 &7
 MonoBehaviour:
@@ -171,7 +171,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 50}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 147
+  controlID: 71
   draggingID: 0
 --- !u!114 &8
 MonoBehaviour:
@@ -192,8 +192,8 @@ MonoBehaviour:
     y: 0
     width: 278.4
     height: 503.2
-  m_MinSize: {x: 200, y: 200}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 201, y: 221}
+  m_MaxSize: {x: 4001, y: 4021}
   m_ActualView: {fileID: 12}
   m_Panes:
   - {fileID: 12}
@@ -274,8 +274,8 @@ MonoBehaviour:
     y: 0
     width: 432.80005
     height: 722.8
-  m_MinSize: {x: 275, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 276, y: 71}
+  m_MaxSize: {x: 4001, y: 4021}
   m_ActualView: {fileID: 18}
   m_Panes:
   - {fileID: 18}
@@ -319,9 +319,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 2.7999878}
-      m_SelectedIDs: c6c20000
-      m_LastClickedID: 49862
-      m_ExpandedIDs: f266ffff4a85ffff9485ffffc28bffffde8bffff72abffff72acffffe29c0000
+      m_SelectedIDs: 0c5c0000
+      m_LastClickedID: 23564
+      m_ExpandedIDs: 04fbffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -751,7 +751,7 @@ MonoBehaviour:
   m_Rotation:
     m_Target: {x: 0.20819388, y: -0.50944203, z: 0.12856439, w: 0.8249849}
     speed: 2
-    m_Value: {x: 0.21399239, y: -0.51523983, z: 0.13464111, w: 0.8189059}
+    m_Value: {x: -0.20819388, y: 0.50944203, z: -0.12856439, w: -0.8249849}
   m_Size:
     m_Target: 53.15173
     speed: 2
@@ -980,7 +980,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Proxy Games/Stylized Nature Kit Lite/Textures
+    - Assets/Proxy Games/Stylized Nature Kit Lite/Misc
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -988,16 +988,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 16
   m_LastFolders:
-  - Assets/Proxy Games/Stylized Nature Kit Lite/Textures
+  - Assets/Proxy Games/Stylized Nature Kit Lite/Misc
   m_LastFoldersGridSize: 16
   m_LastProjectPath: C:\GitHub\Superhell\SuperHell
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 304.40088}
-    m_SelectedIDs: 3a200000
-    m_LastClickedID: 8250
-    m_ExpandedIDs: 00000000e61e0000161f0000361f00003a1f00008e1f0000d61f00006e2000009c9c00009e9c0000a09c0000a29c0000a49c0000a69c0000a89c000000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 328.40143}
+    m_SelectedIDs: 06600000
+    m_LastClickedID: 24582
+    m_ExpandedIDs: 00000000b25f0000b45f0000b65f0000b85f0000ba5f0000bc5f0000be5f0000c05f0000c25f0000c45f0000c65f0000c85f0000ca5f0000cc5f000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1025,7 +1025,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000e61e0000361f00008e1f00006e2000009c9c00009e9c0000a09c0000a29c0000a49c0000a69c0000a89c0000
+    m_ExpandedIDs: 00000000b25f0000b45f0000b65f0000b85f0000ba5f0000bc5f0000be5f0000c05f0000c25f0000c45f0000c65f0000c85f0000ca5f0000cc5f0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1077,7 +1077,7 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
     m_NewAssetIndexInList: -1
-    m_ScrollPosition: {x: 0, y: 24.400024}
+    m_ScrollPosition: {x: 0, y: 0}
     m_GridSize: 16
   m_SkipHiddenPackages: 0
   m_DirectoriesAreaWidth: 330.2
