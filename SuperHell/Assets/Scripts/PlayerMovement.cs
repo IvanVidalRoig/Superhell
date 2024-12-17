@@ -138,7 +138,7 @@ public class PlayerMovement : MonoBehaviour
     private void TeleportToOrigin()
     {
         // Define una posición segura fuera de la capa Reset
-        Vector3 safeOrigin = new Vector3(0, 5, 0); // Ajusta según tu escena
+        Vector3 safeOrigin = new Vector3(0, 4, 10); // Ajusta según tu escena
         transform.position = safeOrigin;
         rb.velocity = Vector3.zero; // Resetear la velocidad para evitar que el jugador siga moviéndose
         Debug.Log("Jugador teletransportado a la posición segura: " + safeOrigin);
