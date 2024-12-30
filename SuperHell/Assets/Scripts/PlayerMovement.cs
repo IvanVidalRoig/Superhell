@@ -3,57 +3,71 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Movimiento")]
     public float speed = 5f;
     public float runSpeed = 8f;
     public float rotationSpeed = 250;
-    public Animator animator;
-    public Rigidbody rb;
-    public float jumpHeight = 3f;
 
+    [Header("Salto")]
+    public float jumpHeight = 3f;
     public Transform groundCheck;
     public float groundDistance = 0.1f;
     public LayerMask groundMask;
-    public LayerMask resetMask; 
 
-    private bool isInResetZone = false; // Variable para la zona Reset
-    private bool isGrounded;
-    private float x, y;
-
-    // Variables para el cooldown de pérdida de vida
+    [Header("Reset / Vida")]
+    public LayerMask resetMask;
+    private bool isInResetZone = false;
     private bool canLoseLife = true;
     public float lifeCooldown = 1f; // 1 segundo de cooldown
 
-    // Variable para controlar los saltos
+    [Header("Componentes")]
+    public Animator animator;
+    public Rigidbody rb;
+
+    // Variables para el conteo de saltos
+    private bool isGrounded;
     private int jumpCount = 0;
     private const int maxJumpCount = 2; // Salto inicial + doble salto
 
+    // Nueva variable: Posición de respawn
+    [Header("Checkpoint")]
+    public Vector3 respawnPosition; // Último punto de reaparición
+
+    void Start()
+    {
+        // Iniciamos la posición de respawn en un punto seguro (como hacías antes con (0,4,10))
+        respawnPosition = new Vector3(0, 4, 10);
+    }
+
     void Update()
     {
-        // Procesar entradas de movimiento
-        x = Input.GetAxis("Horizontal");
-        y = Input.GetAxis("Vertical");
+        // --- Movimiento ---
+        float x = Input.GetAxis("Horizontal");
+        float y = Input.GetAxis("Vertical");
         transform.Rotate(0, x * Time.deltaTime * rotationSpeed, 0);
         transform.Translate(0, 0, y * Time.deltaTime * runSpeed);
+
+        // Actualizar animaciones de movimiento
         animator.SetFloat("VelX", x);
         animator.SetFloat("VelY", y);
 
-        // Verificar si el personaje está en el suelo
+        // --- Comprobar si está en el suelo ---
         bool wasGrounded = isGrounded;
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
-        // Si acaba de aterrizar, resetear jumpCount
+        // Si acaba de aterrizar, reseteamos el número de saltos
         if (isGrounded && !wasGrounded)
         {
             jumpCount = 0;
         }
 
-        // Manejar la teletransportación
-        if (Input.GetKey("q")) 
+        // --- Teletransportar al origen (para debug) ---
+        if (Input.GetKey("q"))
         {
             TeleportToOrigin();
         }
 
-        // Manejar el salto y el doble salto
+        // --- Manejar el salto y el doble salto ---
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (isGrounded && jumpCount < 1)
@@ -73,31 +87,32 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (!isGrounded && jumpCount == 0)
         {
+            // Si no estás en el suelo y jumpCount es 0, significa que caíste sin saltar
             animator.Play("Falling");
         }
     }
 
     private void Jump()
     {
-        // Añadir fuerza para el salto
-        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Resetear la velocidad vertical antes de saltar
+        // Resetear velocidad vertical antes de saltar
+        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+        // Añadir fuerza de salto
         rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
     }
 
-    // Añadimos OnTriggerEnter y OnTriggerExit para la zona Reset
     private void OnTriggerEnter(Collider other)
     {
-        // Manejar colisión con objetos de la capa "Reset" solo si es el collider de los pies
+        // Manejar colisión con objetos de la capa "Reset" solo si coinciden con la tag "Reset"
         if (((1 << other.gameObject.layer) & resetMask) != 0 && other.CompareTag("Reset"))
         {
             Debug.Log("Jugador ha tocado la zona Reset con los pies.");
-            // Verificar si ya podemos perder una vida
+
             if (canLoseLife)
             {
                 isInResetZone = true;
-                canLoseLife = false; // Inhabilitar pérdida de vida hasta que pase el cooldown
+                canLoseLife = false; // Evitamos perder vida repetidamente
 
-                // Llamar al GameManager para perder una vida
+                // Llamamos al GameManager (si existe) para restar vida
                 if (GameManager.instance != null)
                 {
                     GameManager.instance.PerderVida();
@@ -108,11 +123,11 @@ public class PlayerMovement : MonoBehaviour
                     Debug.LogError("GameManager no está asignado en la escena.");
                 }
 
-                // Teletransportar al jugador a la posición de origen
+                // Teletransportar al jugador al último respawn checkpoint
                 TeleportToOrigin();
-                Debug.Log("Jugador teletransportado al origen.");
+                Debug.Log("Jugador teletransportado al último checkpoint.");
 
-                // Iniciar el cooldown para permitir perder otra vida después de cierto tiempo
+                // Iniciar el cooldown para poder perder otra vida después de un tiempo
                 StartCoroutine(LifeCooldown());
             }
         }
@@ -120,7 +135,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        // Manejar la salida de la zona Reset solo si es el collider de los pies
+        // Salir de la zona Reset
         if (((1 << other.gameObject.layer) & resetMask) != 0 && other.CompareTag("Reset"))
         {
             isInResetZone = false;
@@ -135,12 +150,11 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log("Cooldown completado. Ahora puedes perder otra vida.");
     }
 
+    // --- Ajustado para que use la respawnPosition en vez de una fija ---
     private void TeleportToOrigin()
     {
-        // Define una posición segura fuera de la capa Reset
-        Vector3 safeOrigin = new Vector3(0, 4, 10); // Ajusta según tu escena
-        transform.position = safeOrigin;
-        rb.velocity = Vector3.zero; // Resetear la velocidad para evitar que el jugador siga moviéndose
-        Debug.Log("Jugador teletransportado a la posición segura: " + safeOrigin);
+        transform.position = respawnPosition;
+        rb.velocity = Vector3.zero;
+        Debug.Log("Jugador teletransportado al respawn: " + respawnPosition);
     }
 }

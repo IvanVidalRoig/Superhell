@@ -15,7 +15,7 @@ public class EnemyAI : MonoBehaviour
     [Header("Movement Settings")]
     public float patrolSpeed = 3f;
     public float chaseSpeed = 5f;
-    public float margin = 0.5f; // Ajusta para controlar cuanto "hacia adentro" van los waypoints
+    public float margin = 1f; // Ajusta para controlar cuanto "hacia adentro" van los waypoints
 
     [Header("Waypoints (auto-generated)")]
     private List<Transform> waypoints = new List<Transform>();
@@ -144,10 +144,10 @@ public class EnemyAI : MonoBehaviour
                 Vector3 extents = platformBounds.extents;
 
                 // Añadimos el margen para que no estén en el borde exacto
-                Vector3 corner1 = new Vector3(center.x + extents.x - margin, center.y, center.z + extents.z - margin);
-                Vector3 corner2 = new Vector3(center.x - extents.x + margin, center.y, center.z + extents.z - margin);
-                Vector3 corner3 = new Vector3(center.x - extents.x + margin, center.y, center.z - extents.z + margin);
-                Vector3 corner4 = new Vector3(center.x + extents.x - margin, center.y, center.z - extents.z + margin);
+                Vector3 corner1 = new Vector3(center.x + extents.x - margin, center.y + 0.5f, center.z + extents.z - margin);
+                Vector3 corner2 = new Vector3(center.x - extents.x + margin, center.y + 0.5f, center.z + extents.z - margin);
+                Vector3 corner3 = new Vector3(center.x - extents.x + margin, center.y + 0.5f, center.z - extents.z + margin);
+                Vector3 corner4 = new Vector3(center.x + extents.x - margin, center.y + 0.5f, center.z - extents.z + margin);
 
                 waypoints.Add(CreateWaypointAt(corner1, "Waypoint1"));
                 waypoints.Add(CreateWaypointAt(corner2, "Waypoint2"));
