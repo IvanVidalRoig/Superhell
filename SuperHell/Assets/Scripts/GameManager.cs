@@ -6,13 +6,12 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    public int vidas = 3; // Número inicial de vidas
-    public Text vidasTexto; // Referencia al elemento de UI que mostrará las vidas
-    public GameObject gameOverPanel; // Referencia al panel de Game Over
+    public int vidas = 3;
+    public Text vidasTexto;
+    public GameObject gameOverPanel;
 
     void Awake()
     {
-        // Implementar el patrón Singleton
         if (instance == null)
         {
             instance = this;
@@ -24,6 +23,58 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // 1. Te suscribes en OnEnable
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    // 2. Te desuscribes en OnDisable
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "SampleScene")
+        {
+            GameObject canvasGO = GameObject.Find("Canvas");
+            if (canvasGO != null)
+            {
+                Transform panelTransform = canvasGO.transform.Find("GameOverPanel");
+                if (panelTransform != null)
+                {
+                    gameOverPanel = panelTransform.gameObject;
+                    gameOverPanel.SetActive(false);
+
+                    // BUSCAR el Botón dentro del Panel
+                    Transform buttonTransform = gameOverPanel.transform.Find("BotonReiniciar");
+                    if (buttonTransform != null)
+                    {
+                        // Suponiendo que tu botón se llama "BotonReiniciar"
+                        Button botonReiniciar = buttonTransform.GetComponent<Button>();
+
+                        // Elimina cualquier suscripción previa, por si acaso
+                        botonReiniciar.onClick.RemoveAllListeners();
+
+                        // Asigna el método que queremos llamar al hacer click
+                        botonReiniciar.onClick.AddListener(ReiniciarJuego);
+                    }
+                }
+
+                Transform vidasTextoTransform = canvasGO.transform.Find("VidasTexto");
+                if (vidasTextoTransform != null)
+                {
+                    vidasTexto = vidasTextoTransform.GetComponent<Text>();
+                }
+            }
+
+            ActualizarVidasUI();
+        }
+    }
+
+
     void Start()
     {
         ActualizarVidasUI();
@@ -33,7 +84,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Método para restar una vida
     public void PerderVida()
     {
         vidas--;
@@ -43,43 +93,34 @@ public class GameManager : MonoBehaviour
         {
             MostrarGameOver();
         }
-
     }
 
-    // Actualizar el texto de vidas en la UI
     void ActualizarVidasUI()
     {
         if (vidasTexto != null)
         {
-            vidasTexto.text = "Vidas: " + vidas.ToString();
+            vidasTexto.text = "Vidas: " + vidas;
         }
     }
 
-    // Mostrar la pantalla de Game Over
     void MostrarGameOver()
     {
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
         }
-
-        // Opcional: Pausar el juego
         Time.timeScale = 0f;
-
-        // Reiniciar el juego después de unos segundos
-        Invoke("ReiniciarJuego", 3f); // Espera 3 segundos antes de reiniciar
     }
 
-    // Reiniciar el juego
-    void ReiniciarJuego()
+    public void ReiniciarJuego()
     {
-        Time.timeScale = 1f; // Asegurarse de que el tiempo esté activo
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        vidas = 3; // Reiniciar el número de vidas
+        Time.timeScale = 1f;
+        vidas = 3;
         ActualizarVidasUI();
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(false);
         }
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
