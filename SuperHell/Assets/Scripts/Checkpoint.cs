@@ -8,12 +8,11 @@ public class Checkpoint : MonoBehaviour
     [Tooltip("Altura extra para colocar el punto de respawn sobre el cofre.")]
     public float offsetAboveChest = 1f;
 
-    private Animator chestAnimator; // Se obtiene automáticamente en Awake()
+    private Animator chestAnimator;
     private bool alreadyOpened = false;
 
     void Awake()
     {
-        // Si el Animator está en este mismo GameObject
         chestAnimator = GetComponent<Animator>();
         if (chestAnimator == null)
         {
@@ -23,28 +22,22 @@ public class Checkpoint : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Detecta al jugador y comprueba si este cofre se puede volver a abrir
         if (other.CompareTag("Player") && (!alreadyOpened || !onlyOnce))
         {
-            // 1) Actualizar respawn del jugador
             PlayerMovement playerMovement = other.GetComponent<PlayerMovement>();
             if (playerMovement != null)
             {
-                // Define el nuevo punto de respawn un poco por encima del cofre
                 Vector3 newRespawn = transform.position + Vector3.up * offsetAboveChest;
                 playerMovement.respawnPosition = newRespawn;
                 Debug.Log("Checkpoint activado en cofre. Nuevo respawn: " + newRespawn);
             }
 
-            // 2) Disparar la animación de apertura
             if (chestAnimator != null)
             {
-                // Asegúrate de tener un parámetro Trigger en tu Animator Controller llamado "OpenChest"
                 chestAnimator.SetTrigger("OpenChest");
                 Debug.Log("Cofre: disparando animación de apertura.");
             }
 
-            // 3) Marcar como abierto, si solo queremos que se abra la primera vez
             alreadyOpened = true;
         }
     }

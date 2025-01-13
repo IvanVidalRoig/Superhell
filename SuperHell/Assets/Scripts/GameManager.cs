@@ -23,13 +23,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // 1. Te suscribes en OnEnable
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    // 2. Te desuscribes en OnDisable
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -48,17 +46,13 @@ public class GameManager : MonoBehaviour
                     gameOverPanel = panelTransform.gameObject;
                     gameOverPanel.SetActive(false);
 
-                    // BUSCAR el Botón dentro del Panel
                     Transform buttonTransform = gameOverPanel.transform.Find("BotonReiniciar");
                     if (buttonTransform != null)
                     {
-                        // Suponiendo que tu botón se llama "BotonReiniciar"
                         Button botonReiniciar = buttonTransform.GetComponent<Button>();
 
-                        // Elimina cualquier suscripción previa, por si acaso
                         botonReiniciar.onClick.RemoveAllListeners();
 
-                        // Asigna el método que queremos llamar al hacer click
                         botonReiniciar.onClick.AddListener(ReiniciarJuego);
                     }
                 }
