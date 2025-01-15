@@ -13,9 +13,9 @@ public class EnemyAI : MonoBehaviour
     public GameObject platformObject;
 
     [Header("Movement Settings")]
-    public float patrolSpeed = 3f;
-    public float chaseSpeed = 5f;
-    public float margin = 1f; // Ajusta para controlar cuanto "hacia adentro" van los waypoints
+    public float patrolSpeed = 5f;
+    public float chaseSpeed = 8f;
+    public float margin = 11f; // Ajusta para controlar cuanto "hacia adentro" van los waypoints
 
     [Header("Waypoints (auto-generated)")]
     private List<Transform> waypoints = new List<Transform>();
@@ -23,52 +23,60 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Player Reference")]
     public Transform player;
+    private Rigidbody playerRb;
     public EnemyState currentState = EnemyState.Patrol;
     private Animator anim;
-    public int attackRange;
+    public float attackRange = 2f;
+    public float pushForce = 10f; // Ajusta la fuerza del empuje
 
     void Start()
     {
         anim = GetComponentInChildren<Animator>();
-        Debug.Log("Animator encontrado: " + anim.gameObject.name);
 
         if (platformObject != null)
         {
             GenerateWaypoints();
 
-            // Aquí registramos el enemigo en su plataforma
+            // Registrar el enemigo en su plataforma
             PlatformDetector pd = platformObject.GetComponentInChildren<PlatformDetector>();
             if (pd != null)
             {
                 pd.RegisterEnemy(this);
             }
-            else
-            {
-                Debug.LogWarning("La plataforma no tiene PlatformDetector asignado");
-            }
-        }
-        else
-        {
-            Debug.LogError("No se asignó la plataforma al EnemyAI");
         }
 
         if (player == null)
         {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.transform;
+            if (p != null) 
+            {
+                player = p.transform;
+                playerRb = player.GetComponent<Rigidbody>();
+            }
         }
     }
 
     void Update()
     {
+        if (player == null) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        if (distanceToPlayer < attackRange)
+        {
+            SetState(EnemyState.Chase);
+        }
+
         switch (currentState)
         {
             case EnemyState.Patrol:
                 Patrol();
                 break;
             case EnemyState.Chase:
-                if (Vector3.Distance(transform.position, player.position) < attackRange)
+                if (distanceToPlayer < attackRange)
+                {
                     AttackPlayer();
+                }
                 Chase();
                 break;
         }
@@ -77,6 +85,17 @@ public class EnemyAI : MonoBehaviour
     void AttackPlayer()
     {
         anim.SetTrigger("Hit");
+
+        if (playerRb != null)
+        {
+            Vector3 pushDirection = (player.position - transform.position).normalized;
+
+            // Ajustar la direcciÃ³n del empuje para que el jugador sea empujado hacia fuera de la plataforma
+            pushDirection.y = 0.2f; // PequeÃ±o empuje hacia arriba
+            pushDirection += transform.forward * 1.5f; // Asegura que el jugador vaya hacia adelante
+
+            playerRb.AddForce(pushDirection * pushForce, ForceMode.Impulse);
+        }
     }
 
     void Patrol()
@@ -85,23 +104,17 @@ public class EnemyAI : MonoBehaviour
 
         Transform target = waypoints[currentWaypointIndex];
 
-        // Dirección hacia el waypoint
         Vector3 direction = (target.position - transform.position).normalized;
-        direction.y = 0; // Asegurarse de que no cambie la inclinación
+        direction.y = 0; 
 
-        // Rotación suave hacia el objetivo
-        float rotationSpeed = 5f; // Ajusta según la rapidez de giro que desees
+        float rotationSpeed = 10f; 
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
-        // Movimiento hacia el waypoint
         transform.position = Vector3.MoveTowards(transform.position, target.position, patrolSpeed * Time.deltaTime);
         anim.SetFloat("Walk", 1f);
-        var aux = anim.GetFloat("Walk");
 
-        // Cambio de waypoint cuando llega
-        float dist = Vector3.Distance(transform.position, target.position);
-        if (dist < 0.2f)
+        if (Vector3.Distance(transform.position, target.position) < 1f)
         {
             currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Count;
         }
@@ -112,16 +125,15 @@ public class EnemyAI : MonoBehaviour
         if (player == null) return;
 
         Vector3 direction = (player.position - transform.position).normalized;
-        direction.y = 0; // Mantener el enemigo erguido sin inclinarlo
-        anim.SetFloat("Walk", 1f);
+        direction.y = 0; 
+        anim.SetFloat("Walk", 2f);
 
         float rotationSpeed = 5f;
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
-        transform.position += direction * chaseSpeed * Time.deltaTime;
+        transform.Translate(direction * chaseSpeed * Time.deltaTime, Space.World);
     }
-
 
     public void SetState(EnemyState newState)
     {
@@ -138,30 +150,20 @@ public class EnemyAI : MonoBehaviour
             Renderer rend = planeTransform.GetComponent<Renderer>();
             if (rend != null)
             {
-                // Ahora tienes el Renderer específico del objeto "plane"
                 Bounds platformBounds = rend.bounds;
                 Vector3 center = platformBounds.center;
                 Vector3 extents = platformBounds.extents;
 
-                // Añadimos el margen para que no estén en el borde exacto
-                Vector3 corner1 = new Vector3(center.x + extents.x - margin, center.y + 0.5f, center.z + extents.z - margin);
-                Vector3 corner2 = new Vector3(center.x - extents.x + margin, center.y + 0.5f, center.z + extents.z - margin);
-                Vector3 corner3 = new Vector3(center.x - extents.x + margin, center.y + 0.5f, center.z - extents.z + margin);
-                Vector3 corner4 = new Vector3(center.x + extents.x - margin, center.y + 0.5f, center.z - extents.z + margin);
+                Vector3 corner1 = new Vector3(center.x + extents.x - margin, center.y + 1f, center.z + extents.z - margin);
+                Vector3 corner2 = new Vector3(center.x - extents.x + margin, center.y + 1f, center.z + extents.z - margin);
+                Vector3 corner3 = new Vector3(center.x - extents.x + margin, center.y + 1f, center.z - extents.z + margin);
+                Vector3 corner4 = new Vector3(center.x + extents.x - margin, center.y + 1f, center.z - extents.z + margin);
 
                 waypoints.Add(CreateWaypointAt(corner1, "Waypoint1"));
                 waypoints.Add(CreateWaypointAt(corner2, "Waypoint2"));
                 waypoints.Add(CreateWaypointAt(corner3, "Waypoint3"));
                 waypoints.Add(CreateWaypointAt(corner4, "Waypoint4"));
             }
-            else
-            {
-                Debug.LogError("El objeto 'plane' no tiene un Renderer.");
-            }
-        }
-        else
-        {
-            Debug.LogError("No se encontró un objeto hijo llamado 'plane' en la plataforma.");
         }
     }
 
@@ -169,29 +171,16 @@ public class EnemyAI : MonoBehaviour
     {
         GameObject wp = new GameObject(name);
         wp.transform.position = position;
-    //    wp.transform.SetParent(this.transform);
         return wp.transform;
     }
 
-    //void OnValidate()
-    //{
-    //    if (platformObject != null)
-    //    {
-    //        GenerateWaypoints(); // Este método generará los waypoints en modo edición
-    //    }
-    //}
-
-
     void OnDrawGizmos()
     {
-        // Si no tienes waypoints aún, o si el juego no está corriendo, sal
         if (waypoints == null || waypoints.Count == 0)
             return;
 
-        // Elegir un color para los gizmos
         Gizmos.color = Color.green;
 
-        // Dibujar una pequeña esfera en cada waypoint
         foreach (Transform wp in waypoints)
         {
             if (wp != null)
@@ -200,11 +189,10 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        // Opcional: Dibujar líneas entre los waypoints para ver el recorrido
         for (int i = 0; i < waypoints.Count; i++)
         {
             Transform current = waypoints[i];
-            Transform next = waypoints[(i + 1) % waypoints.Count]; // Conexión circular
+            Transform next = waypoints[(i + 1) % waypoints.Count]; 
             if (current != null && next != null)
             {
                 Gizmos.color = Color.yellow;
@@ -212,5 +200,4 @@ public class EnemyAI : MonoBehaviour
             }
         }
     }
-
 }
