@@ -5,8 +5,22 @@ public class MainMenuController : MonoBehaviour
 {
     public void StartGame()
     {
-        // Asegúrate de que el nombre de la escena coincida con la escena de tu juego principal
+        // Asegï¿½rate de que el nombre de la escena coincida con la escena de tu juego principal
         SceneManager.LoadScene("SampleScene");
+    }
+
+    public void RestarLevel(){
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("SampleScene");
+    }
+
+    public void GoToMainMenu(){
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
+    }
+
+        public void GoToControlesMenu(){
+        SceneManager.LoadScene("ControlesMenu");
     }
 
     public void EndGame()
