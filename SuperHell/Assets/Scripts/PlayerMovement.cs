@@ -1,11 +1,12 @@
 using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movimiento")]
-    public float speed = 5f;
-    public float runSpeed = 8f;
+    public float speed = 3f;
+    public float runSpeed = 5f;
     public float rotationSpeed = 250;
 
     [Header("Salto")]
@@ -54,9 +55,35 @@ public class PlayerMovement : MonoBehaviour
         // --- Comprobar si está en el suelo ---
         bool wasGrounded = isGrounded;
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+		Vector3 moveDirection = transform.forward * y;
 
-        // Si acaba de aterrizar, reseteamos el número de saltos
-        if (isGrounded && !wasGrounded)
+		if (isGrounded)
+		{
+			rb.velocity = new Vector3(moveDirection.x * runSpeed, rb.velocity.y, moveDirection.z * runSpeed);
+		}
+		else
+		{
+			// Movimiento reducido en el aire
+			rb.velocity = new Vector3(moveDirection.x * (runSpeed * 0.5f), rb.velocity.y, moveDirection.z * (runSpeed * 0.5f));
+		}
+		if (isGrounded)
+		{
+			transform.Rotate(0, x * Time.deltaTime * rotationSpeed, 0);
+			transform.Translate(0, 0, y * Time.deltaTime * runSpeed);
+
+			// Actualizar animaciones de movimiento solo si está en el suelo
+			animator.SetFloat("VelX", x);
+			animator.SetFloat("VelY", y);
+		}
+		else
+		{
+			// Si está en el aire, detener animaciones de caminar
+			animator.SetFloat("VelX", 0);
+			animator.SetFloat("VelY", 0);
+		}
+
+		// Si acaba de aterrizar, reseteamos el número de saltos
+		if (isGrounded && !wasGrounded)
         {
             jumpCount = 0;
         }
@@ -85,12 +112,12 @@ public class PlayerMovement : MonoBehaviour
                 jumpCount++;
             }
         }
-        else if (!isGrounded && jumpCount == 0)
-        {
-            // Si no estás en el suelo y jumpCount es 0, significa que caíste sin saltar
-            animator.Play("Falling");
-        }
-    }
+
+		if (!isGrounded && rb.velocity.y < 0)
+		{
+			animator.Play("Falling");
+		}
+	}
 
     private void Jump()
     {

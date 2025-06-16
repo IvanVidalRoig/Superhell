@@ -29,6 +29,9 @@ public class EnemyAI : MonoBehaviour
     public float attackRange = 2f;
     public float pushForce = 10f; // Ajusta la fuerza del empuje
 
+    private float minX, maxX, minZ, maxZ;
+
+
     void Start()
     {
         anim = GetComponentInChildren<Animator>();
@@ -125,7 +128,18 @@ public class EnemyAI : MonoBehaviour
         if (player == null) return;
 
         Vector3 direction = (player.position - transform.position).normalized;
-        direction.y = 0; 
+        direction.y = 0;
+
+        // Calcular posición siguiente
+        Vector3 nextPosition = transform.position + direction * chaseSpeed * Time.deltaTime;
+
+        // Verificar si está dentro del área de movimiento permitido
+        if (nextPosition.x < minX || nextPosition.x > maxX || nextPosition.z < minZ || nextPosition.z > maxZ)
+        {
+            SetState(EnemyState.Patrol);
+            return;
+        }
+
         anim.SetFloat("Walk", 2f);
 
         float rotationSpeed = 5f;
@@ -163,6 +177,11 @@ public class EnemyAI : MonoBehaviour
                 waypoints.Add(CreateWaypointAt(corner2, "Waypoint2"));
                 waypoints.Add(CreateWaypointAt(corner3, "Waypoint3"));
                 waypoints.Add(CreateWaypointAt(corner4, "Waypoint4"));
+
+                minX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
+                maxX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
+                minZ = Mathf.Min(corner1.z, corner2.z, corner3.z, corner4.z);
+                maxZ = Mathf.Max(corner1.z, corner2.z, corner3.z, corner4.z);
             }
         }
     }

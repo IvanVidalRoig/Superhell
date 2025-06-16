@@ -37,6 +37,8 @@ public class GameManager : MonoBehaviour
     {
         if (scene.name == "SampleScene")
         {
+            vidas = 3;
+            Time.timeScale = 1f;
             GameObject canvasGO = GameObject.Find("Canvas");
             if (canvasGO != null)
             {
@@ -61,6 +63,11 @@ public class GameManager : MonoBehaviour
                 if (vidasTextoTransform != null)
                 {
                     vidasTexto = vidasTextoTransform.GetComponent<Text>();
+                }
+                MenuPausaController pauseController = FindObjectOfType<MenuPausaController>();
+                if (pauseController != null)
+                {
+                    pauseController.InitializePauseMenu();
                 }
             }
 

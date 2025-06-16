@@ -8,7 +8,8 @@ public class EnemyPusher : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            Rigidbody playerRb = collision.gameObject.GetComponent<Rigidbody>();
+			GameManager.instance.PerderVida();
+			Rigidbody playerRb = collision.gameObject.GetComponent<Rigidbody>();
             if (playerRb != null)
             {
                 Vector3 direction = (collision.transform.position - transform.position).normalized;
